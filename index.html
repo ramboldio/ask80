@@ -6,7 +6,12 @@
 	<link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
 	<script src="bower_components/jquery/dist/jquery.js"></script>
 	<script src="bower_components/typed.js/js/typed.js"></script>
+	
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.6/socket.io.min.js"></script>
 	<script>
+
+
+var socket = io();
 		
 $(document).ready(function () {
 	console.log("yay");
@@ -27,7 +32,7 @@ function send() {
 	var text = $('textarea').val();
 	console.log(text);
 	$('.question').html(text);
-	reveal_awnser();
+	sendMessage(text);
 }
 
 function reveal_dialog() {
@@ -36,13 +41,49 @@ function reveal_dialog() {
 function reveal_awnser() {
 	$('.reply').show('slow');
 }
-function reply_callback() {
+function reply_callback(msg) {
 	$('.reply').css('font-style', "regular");
 	$(".reply p").typed({
-        strings: ["aswndsdfnoim"],
+        strings: [msg],
         showCursor: true
       });
 }
+
+
+
+
+function sendMessage(message) {
+  // Sends an SMS message to the server, that is either sent directly or put into the queue.
+  // Usage:
+  // socket.emit('send', 'The message to Adrian');
+  socket.emit('send', msg);
+  document.getElementById('send').disabled = true;
+}
+
+// Received when the position in the queue for this user has been updated. If the event is
+// received after a sendMessage call, it means that the user is in the queue.
+// Example
+// message: "1" => There is 1 user in front of you in the queue
+socket.on('queue', function(message) {
+  reply_callback( 'Adrian is busy and you are in the queue! There are ' );
+    message + ' people ahead of you!';
+});
+
+// Received when the current user is the active user and the message has been sent to Adrian.
+// Example
+// message: true
+socket.on('active', function(message) {
+  reply_callback( '80 is typing...');
+});
+
+// Received when Adrian responds to a message
+// Example
+// message: "Adrian's reply" => Adrian send the text: "Adrian's reply" 
+socket.on('response', function(message) {
+  document.getElementById('send').disabled = false;
+  reply_callback( "Adrian's response: " + message);
+});
+
 	</script>
 	<style>
 		body {
